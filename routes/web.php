@@ -24,6 +24,7 @@ Route::get('/placetopay/response/reference/{reference}', [PlaceToPayController::
 Route::get('/placetopay/create-payment-request', [PlaceToPayController::class, 'createPaymentRequest'])->name('placetopay.create-payment-request');
 
 Route::get('/orders/new-order', [OrderController::class, 'newOrder'])->name('orders.new-order');
+Route::post('/orders/new-order', [OrderController::class, 'store' ]);
 Route::get('/orders/order-list', [OrderController::class, 'orderList'])->name('orders.order-list');
 
 Auth::routes();

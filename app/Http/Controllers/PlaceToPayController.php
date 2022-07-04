@@ -8,6 +8,7 @@ use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use App\payAttempt;
+use Redirect;
 
 class PlaceToPayController extends Controller
 {
@@ -33,13 +34,13 @@ class PlaceToPayController extends Controller
         return $placetopay;
     }
 
-    public function createPaymentRequest()
+    public function createPaymentRequest(Array $paymentData)
     {
         $reference = 'TEST_' . time();
         $request = [
             'payment' => [
                 'reference' => $reference,
-                'description' => 'Testing payment',
+                'description' => $paymentData['name'],
                 'amount' => [
                     'currency' => 'COP',
                     'total' => 120000,
@@ -57,14 +58,13 @@ class PlaceToPayController extends Controller
             if ($response->isSuccessful()) {
                 // STORE THE $response->requestId() and $response->processUrl() on your DB associated with the payment order
                 // Redirect the client to the processUrl or display it on the JS extension
-                $response->processUrl();
+                return Redirect::to($response->processUrl());
             } else {
                 // There was some error so check the message and log it
-                $response->status()->message();
+                return $response->status()->message();
             }
-            dd($response);
         } catch (Exception $e) {
-            dd($e->getMessage());
+            return $e->getMessage();
         }            
     }
 
