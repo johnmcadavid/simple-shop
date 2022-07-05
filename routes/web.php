@@ -19,14 +19,14 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/placetopay/authentication', [PlaceToPayController::class, 'authentication'])->name('placetopay.authentication');
-Route::get('/placetopay/response/reference/{reference}', [PlaceToPayController::class, 'response'])->name('placetopay.response');
-Route::get('/placetopay/create-payment-request', [PlaceToPayController::class, 'createPaymentRequest'])->name('placetopay.create-payment-request');
-
-Route::get('/orders/new-order', [OrderController::class, 'newOrder'])->name('orders.new-order');
-Route::post('/orders/new-order', [OrderController::class, 'store' ]);
-Route::get('/orders/order-list', [OrderController::class, 'orderList'])->name('orders.order-list');
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
 Auth::routes();
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::group(['prefix' => 'orders'], function () {
+    Route::get('create', [OrderController::class, 'create'])->name('orders.create');
+    Route::post('store', [OrderController::class, 'store' ]);
+    Route::get('list', [OrderController::class, 'list'])->name('orders.list');
+    Route::get('response/reference/{reference}', [OrderController::class, 'response' ])->name('orders.response');
+});
+

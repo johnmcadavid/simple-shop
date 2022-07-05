@@ -32,43 +32,55 @@
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ url('/orders/new-order') }}">
+                    <form method="POST" action="{{ url('/orders/store') }}">
                         {{ csrf_field() }}
+                        
+                        <div class="mb-3">
+                            <label class="form-label" for="inputName">Producto:</label>
+                            <input 
+                                type="text" 
+                                name="product" 
+                                id="inputProduct"
+                                class="form-control"
+                                value="{{ $singleProductName }}" 
+                                placeholder="Producto"
+                                readonly="readonly">
+                        </div>
 
                         <div class="mb-3">
-                            <label class="form-label" for="inputName">Name:</label>
+                            <label class="form-label" for="inputName">Nombre:</label>
                             <input 
                                 type="text" 
                                 name="name" 
                                 id="inputName"
                                 class="form-control @error('name') is-invalid @enderror" 
-                                placeholder="Name">
+                                placeholder="Digite su nombre">
                             @error('name')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label" for="inputEmail">Email:</label>
+                            <label class="form-label" for="inputEmail">Correo electrónico:</label>
                             <input 
                                 type="text" 
                                 name="email" 
                                 id="inputEmail"
                                 class="form-control @error('email') is-invalid @enderror" 
-                                placeholder="Email">
+                                placeholder="Digite su correo electrónico">
                             @error('email')
                                 <span class="text-danger">{{ $message }}</span>
                             @endif
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label" for="inputName">Mobile:</label>
+                            <label class="form-label" for="inputName">Celular:</label>
                             <input 
                                 type="text" 
                                 name="mobile" 
                                 id="inputMobile"
                                 class="form-control @error('mobile') is-invalid @enderror" 
-                                placeholder="Mobile">
+                                placeholder="Digite su número celular">
                             @error('mobile')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror

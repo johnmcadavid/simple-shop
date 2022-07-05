@@ -14,10 +14,10 @@ return [
     */
 
     'login' => 'Login',
-    'register' => 'Register',
-    'logout' => 'Logout',
-    'orders' => 'Orders',
-    'new_order' => 'New order',
-    'order_list' => 'Order list',
+    'register' => 'Registro',
+    'logout' => 'Salir',
+    'orders' => 'Órdenes',
+    'new_order' => 'Nueva orden',
+    'order_list' => 'Listado de órdenes',
 
 ];

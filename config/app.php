@@ -135,6 +135,10 @@ return [
         'endpoint' =>  env('PLACE_TO_PAY_ENDPOINT'),
     ],    
 
+    'return_url' => 'http://127.0.0.1:8000/orders/response/',
+    'single_product_name' => 'PANEL SOLAR DE 500W',
+    'single_product_price' => 740000,
+
     /*
     |--------------------------------------------------------------------------
     | Autoloaded Service Providers

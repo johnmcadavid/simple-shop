@@ -34,42 +34,46 @@ class PlaceToPayController extends Controller
         return $placetopay;
     }
 
-    public function createPaymentRequest(Array $paymentData)
+    public function getRequest(String $customerName)
     {
-        $reference = 'TEST_' . time();
+        $reference = 'JMCG_' . time();
         $request = [
+            'locale' => 'es_CO',
             'payment' => [
                 'reference' => $reference,
-                'description' => $paymentData['name'],
+                'description' => $customerName." - ".config('app.single_product_name'),
                 'amount' => [
                     'currency' => 'COP',
-                    'total' => 120000,
+                    'total' => config('app.single_product_price'),
                 ],
+                "allowPartial" => false
             ],
             'expiration' => date('c', strtotime('+2 days')),
-            'returnUrl' => 'http://127.0.0.1:8000/placetopay/response/reference/' . $reference,
+            'returnUrl' => config('app.return_url').'reference/'.$reference,
             'ipAddress' => '127.0.0.1',
-            'userAgent' => 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
+            'userAgent' => 'PlacetoPay Sandbox'
         ];
-        $placetopay = $this->authentication();
-
-        try {
-            $response = $placetopay->request($request);
-            if ($response->isSuccessful()) {
-                // STORE THE $response->requestId() and $response->processUrl() on your DB associated with the payment order
-                // Redirect the client to the processUrl or display it on the JS extension
-                return Redirect::to($response->processUrl());
-            } else {
-                // There was some error so check the message and log it
-                return $response->status()->message();
-            }
-        } catch (Exception $e) {
-            return $e->getMessage();
-        }            
+        return $request;
     }
 
     public function response($reference)
     {
         Log::channel('placetopay')->info('placetopay.response', ['reference' => $reference]);
     }
+
+    public function createPaymentRequest(Array $paymentData)
+    {
+        $request = $this->getRequest($paymentData['name']);
+        $placetopay = $this->authentication();
+        try {
+            return $placetopay->request($request);
+        } catch (Exception $e) {
+            return $e->getMessage();
+        }            
+    }
+
+    public function getPaymentSession(Array $paymentData)
+    {
+    }
+
 }

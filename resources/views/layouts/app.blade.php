@@ -58,11 +58,11 @@
                                 </a>
 
                                 <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                    <a class="dropdown-item" href="{{ route('orders.new-order') }}">
+                                    <a class="dropdown-item" href="{{ route('orders.create') }}">
                                         {{ __('menu.new_order') }}
                                     </a>
 
-                                    <a class="dropdown-item" href="{{ route('orders.order-list') }}">
+                                    <a class="dropdown-item" href="{{ route('orders.list') }}">
                                         {{ __('menu.order_list') }}
                                     </a>
                                 </div>
