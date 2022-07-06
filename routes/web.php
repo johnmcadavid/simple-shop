@@ -24,9 +24,9 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 Auth::routes();
 
 Route::group(['prefix' => 'orders'], function () {
+    Route::get('index', [OrderController::class, 'index'])->name('orders.index');
     Route::get('create', [OrderController::class, 'create'])->name('orders.create');
-    Route::post('store', [OrderController::class, 'store' ]);
-    Route::get('list', [OrderController::class, 'list'])->name('orders.list');
+    Route::post('process', [OrderController::class, 'process' ]);
     Route::get('response/reference/{reference}', [OrderController::class, 'response' ])->name('orders.response');
 });
 

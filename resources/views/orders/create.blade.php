@@ -18,6 +18,15 @@
                     </div>
                     @endif
 
+                    @if(Session::has('error'))
+                    <div class="alert alert alert-danger alert-block">
+                        {{ Session::get('error') }}
+                        @php
+                            Session::forget('error');
+                        @endphp
+                    </div>
+                    @endif
+
                     <!-- Display Error Message -->
                     @if ($errors->any())
                         <div class="alert alert-danger">
@@ -32,7 +41,7 @@
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ url('/orders/store') }}">
+                    <form method="POST" action="{{ url('/orders/process') }}">
                         {{ csrf_field() }}
                         
                         <div class="mb-3">
@@ -52,7 +61,7 @@
                             <input 
                                 type="text" 
                                 name="name" 
-                                id="inputName"
+                                id="name"
                                 class="form-control @error('name') is-invalid @enderror" 
                                 placeholder="Digite su nombre">
                             @error('name')
@@ -65,7 +74,7 @@
                             <input 
                                 type="text" 
                                 name="email" 
-                                id="inputEmail"
+                                id="email"
                                 class="form-control @error('email') is-invalid @enderror" 
                                 placeholder="Digite su correo electrónico">
                             @error('email')
@@ -78,7 +87,7 @@
                             <input 
                                 type="text" 
                                 name="mobile" 
-                                id="inputMobile"
+                                id="mobile"
                                 class="form-control @error('mobile') is-invalid @enderror" 
                                 placeholder="Digite su número celular">
                             @error('mobile')

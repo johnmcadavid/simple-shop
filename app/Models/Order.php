@@ -14,4 +14,14 @@ class Order extends Model
         'status_id',
         'customer_id',
     ];
+
+    public function status()
+    {
+        return $this->belongsTo('App\Models\Status');
+    }
+
+    public function customer()
+    {
+        return $this->belongsTo('App\Models\Customer');
+    }    
 }

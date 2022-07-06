@@ -62,7 +62,7 @@
                                         {{ __('menu.new_order') }}
                                     </a>
 
-                                    <a class="dropdown-item" href="{{ route('orders.list') }}">
+                                    <a class="dropdown-item" href="{{ route('orders.index') }}">
                                         {{ __('menu.order_list') }}
                                     </a>
                                 </div>
@@ -76,7 +76,7 @@
                                     <a class="dropdown-item" href="{{ route('logout') }}"
                                        onclick="event.preventDefault();
                                                      document.getElementById('logout-form').submit();">
-                                        {{ __('Logout') }}
+                                        {{ __('Salir') }}
                                     </a>
 
                                     <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">

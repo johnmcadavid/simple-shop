@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\Customer;
 use App\Models\Status;
 use App\Http\Controllers\PlaceToPayController;
+use App\Http\Controllers\CustomerController;
 use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
@@ -17,6 +18,12 @@ class OrderController extends Controller
         $this->middleware('auth');
     }
 
+    public function index(Request $request)
+    {
+        $orders = Order::latest()->get();
+        return view('orders.index', ['orders' => $orders]);
+    }
+
     public function create()
     {
         //Log::channel('placetopay')->info('placetopay.response', ['log' => 'Test']);
@@ -25,46 +32,57 @@ class OrderController extends Controller
         $singleProductName = config('app.single_product_name');
         return view('orders.create', [ 'status' => $status, 'customers' => $customers, 'singleProductName' => $singleProductName ] );
     }
-
+    
     public function store(Request $request)
+    {
+        $order = new Order();
+        $order->code = $request->input("code");
+        $order->status_id = $request->input("status_id");
+        $order->customer_id = $request->input("customer_id");
+        $order->request_id = $request->input("request_id");
+        $order->process_url = $request->input("process_url");
+        $order->save();
+    }
+
+    public function process(Request $request)
     {
         $validatedData = $request->validate([
                 'name' => 'required|max:80',
-                'email' => 'required|email|unique:customers|max:120',
+                'email' => 'required|email|max:120',
                 'mobile' => 'max:40',
             ], [
-                'name.required' => 'Name field is required.',
-                'name.max' => 'The name cannot be more than 80 characters.',
-                'email.required' => 'Email field is required.',
-                'email.email' => 'Email field must be email address.',
-                'email.max' => 'The email cannot be more than 120 characters.',
-                'mobile.max' => 'The mobile cannot be more than 40 characters.',
+                'name.required' => 'El campo Nombre es requerido.',
+                'name.max' => 'El campo Nombre no puede tener más de 80 caracteres.',
+                'email.required' => 'El campo Correo electrónico es requerido.',
+                'email.email' => 'El campo Correo electrónico no es una dirección de correo válida.',
+                'email.max' => 'El campo Correo electrónico no puede ser de más de 120 caracteres.',
+                'mobile.max' => 'El campo Celular no puede ser de más de 40 caracteres.',
             ]);
         
         $createPayment = new PlaceToPayController();
         $createPaymentResponse = $createPayment->createPaymentRequest($validatedData);
 
-        // STORE THE $response->requestId() and $response->processUrl() on your DB associated with the payment order
-        // Redirect the client to the processUrl or display it on the JS extension
-        if (is_object($createPaymentResponse) && $createPaymentResponse->isSuccessful()) 
+        if ($createPaymentResponse->isSuccessful()) 
         {
+            $customer = new CustomerController();
+            $customerRequest = new Request($validatedData);
+            $customerId = $customer->store($customerRequest);
+
+            $orderRequest = new Request([
+                'code' => $createPayment->getReference(),
+                'status_id' => 1,
+                'customer_id' => $customerId,
+                'request_id' => $createPaymentResponse->requestId(),
+                'process_url' => $createPaymentResponse->processUrl()
+            ]);
+            $this->store($orderRequest);
+            
             redirect()->to($createPaymentResponse->processUrl())->send();
-        } 
-        elseif (is_object($createPaymentResponse) && !$createPaymentResponse->isSuccessful()) 
-        {
-            return back()->with($createPaymentResponse->status()->message());
         } 
         else 
         {
-            return back()->with('success', $createPaymentResponse);
-        }        
-    }
-
-    public function list($code)
-    {
-        //Log::channel('order')->info('order.response', ['order' => $code]);
-        $orders = Order::get();
-        return view('orders.list', ['orders' => $orders]);
+            return back()->with('error', $createPaymentResponse->status()->message());
+        }       
     }
 
     public function response(Request $request)

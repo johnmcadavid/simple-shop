@@ -15,20 +15,27 @@ class PlaceToPayController extends Controller
     private $login;
     private $trankey;
     private $endpoint;
+    private $reference;
  
     public function __construct()
     {
         $this->login = config('app.place_to_pay.login');
         $this->trankey = config('app.place_to_pay.trankey');
         $this->endpoint = config('app.place_to_pay.endpoint');
+        $this->reference = 'JMCG_' . time();
     }
- 
+
+    public function getReference()
+    {
+        return $this->reference;
+    }
+
     public function authentication()
     {
         $placetopay = new \Dnetix\Redirection\PlacetoPay([
-            'login' => $this->login, // Provided by PlacetoPay
-            'tranKey' => $this->trankey, // Provided by PlacetoPay
-            'baseUrl' => 'https://dev.placetopay.com/redirection/',
+            'login' => $this->login,
+            'tranKey' => $this->trankey,
+            'baseUrl' =>  $this->endpoint,
         ]);
 
         return $placetopay;
@@ -36,11 +43,10 @@ class PlaceToPayController extends Controller
 
     public function getRequest(String $customerName)
     {
-        $reference = 'JMCG_' . time();
         $request = [
             'locale' => 'es_CO',
             'payment' => [
-                'reference' => $reference,
+                'reference' => $this->reference,
                 'description' => $customerName." - ".config('app.single_product_name'),
                 'amount' => [
                     'currency' => 'COP',
@@ -49,7 +55,7 @@ class PlaceToPayController extends Controller
                 "allowPartial" => false
             ],
             'expiration' => date('c', strtotime('+2 days')),
-            'returnUrl' => config('app.return_url').'reference/'.$reference,
+            'returnUrl' => config('app.return_url').'reference/'.$this->reference,
             'ipAddress' => '127.0.0.1',
             'userAgent' => 'PlacetoPay Sandbox'
         ];
@@ -66,10 +72,11 @@ class PlaceToPayController extends Controller
         $request = $this->getRequest($paymentData['name']);
         $placetopay = $this->authentication();
         try {
-            return $placetopay->request($request);
+            $createResponse = $placetopay->request($request);
+            return $createResponse;
         } catch (Exception $e) {
-            return $e->getMessage();
-        }            
+            return back()->with('error', $e->getMessage());
+        }
     }
 
     public function getPaymentSession(Array $paymentData)
