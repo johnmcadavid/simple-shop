@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Models\Customer;
 use App\Models\Status;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\PlaceToPayController;
 use App\Http\Controllers\CustomerController;
 use Illuminate\Support\Facades\DB;
@@ -26,7 +27,6 @@ class OrderController extends Controller
 
     public function create()
     {
-        //Log::channel('placetopay')->info('placetopay.response', ['log' => 'Test']);
         $status = Status::pluck('name', 'id');
         $customers = Customer::pluck('name', 'id');
         $singleProductName = config('app.single_product_name');
@@ -42,6 +42,7 @@ class OrderController extends Controller
         $order->request_id = $request->input("request_id");
         $order->process_url = $request->input("process_url");
         $order->save();
+        Log::channel('placetopay')->info('placetopay.order-store', $order->toArray());
     }
 
     public function process(Request $request)
@@ -87,13 +88,33 @@ class OrderController extends Controller
 
     public function response(String $reference)
     {
-        $order = Order::where('code', $reference)->first();
-        $sessionInformation = new PlaceToPayController();
-        $sessionInformationResponse = $sessionInformation->getSessionInformation($order->request_id);
-        dd($sessionInformationResponse);
-        
-        // Log::channel('placetopay')->info('placetopay.response', ['requestId' => $requestId, 'reference' => $reference, 'signature' => $signature]);
-        return view('orders.response', ['requestId' => $order->request_id, 'reference' => $order->code]);
+        try {
+            $order = Order::where('code', $reference)->first();
+            $sessionInformation = new PlaceToPayController();
+            $sessionInformationResponse = $sessionInformation->getSessionInformation($order->request_id);
+            if ($sessionInformationResponse['status']['status'] == "APPROVED") {
+                $order->status_id = 2;
+            }
+            elseif ($sessionInformationResponse['status']['status'] == "REJECTED") {
+                $order->status_id = 3;
+            }
+            elseif ($sessionInformationResponse['status']['status'] == "PENDING") {
+                $order->status_id = 1;
+            }
+            $order->message = $sessionInformationResponse['status']['message'];
+            $order->payment_method = $sessionInformationResponse['payment'][0]['paymentMethodName'];
+            $order->save();
+            Log::channel('placetopay')->info('placetopay.response', ['reference' => $reference, 'message' => $order->message , 'status' => $sessionInformationResponse['status']['status']]);
+        } catch (Exception $e) {
+            Log::channel('placetopay')->info('placetopay.response', ['reference' => $reference, 'message' => $e->getMessage()]);
+            return redirect('/orders/fail')->with('status', $e->getMessage());
+        }
+        return view('orders.response', ['order' => $order]);
+    }
+
+    public function fail()
+    {
+        return view('orders.fail');
     }
 
 }

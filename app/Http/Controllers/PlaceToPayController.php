@@ -37,18 +37,6 @@ class PlaceToPayController extends Controller
             'tranKey' => $this->trankey,
             'baseUrl' =>  $this->endpoint,
         ]);
-
-        return $placetopay;
-    }
-
-    public function authentication2(String $requestId)
-    {
-        $placetopay = new \Dnetix\Redirection\PlacetoPay([
-            'login' => $this->login,
-            'tranKey' => $this->trankey,
-            'baseUrl' =>  $this->endpoint.'/'.$requestId,
-        ]);
-
         return $placetopay;
     }
 
@@ -75,11 +63,11 @@ class PlaceToPayController extends Controller
 
     public function createPaymentRequest(Array $paymentData)
     {
-        $request = $this->createRequest($paymentData['name']);
-        $placetopay = $this->authentication();
         try {
-            $createResponse = $placetopay->request($request);
-            return $createResponse;
+            $request = $this->createRequest($paymentData['name']);
+            $placetopay = $this->authentication();
+            $response = $placetopay->request($request);
+            return $response;
         } catch (Exception $e) {
             return back()->with('error', $e->getMessage());
         }
@@ -87,14 +75,12 @@ class PlaceToPayController extends Controller
 
     public function getSessionInformation(String $requestId)
     {
-        $request = new Request;
-        $placetopay = $this->authentication2($requestId);
         try {
-            $createResponse = $placetopay->request($request);
-            dd($createResponse);
+            $placetopay = $this->authentication();
+            $response = $placetopay->query($requestId)->toArray();
+            return $response;
         } catch (Exception $e) {
-            dd($e->getMessage());
-            //return back()->with('error', $e->getMessage());
+            return redirect('/orders/fail')->with('status', $e->getMessage());            
         }
     }
 }

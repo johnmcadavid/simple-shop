@@ -16,24 +16,28 @@
                                 <thead>
                                     <tr>
                                         <th>ID</th>
+                                        <th>Fecha</th>
                                         <th>Cliente</th>
                                         <th>Email</th>
                                         <th>Celular</th>
                                         <th>Código/Referencia</th>
                                         <th>Estado</th>
                                         <th>Request ID</th>
+                                        <th>Método de pago</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach($orders as $order)
                                         <tr>
                                             <td>{!! $order->id !!}</td>
+                                            <td>{!! $order->customer->created_at !!}</td>
                                             <td>{!! $order->customer->name !!}</td>
                                             <td>{!! $order->customer->email !!}</td>
                                             <td>{!! $order->customer->mobile !!}</td>
                                             <td>{!! $order->code !!}</td>
                                             <td>{!! $order->status->name !!}</td>
-                                            <td>{!! $order->request_id !!}</td>
+                                            <td title="{!! $order->message !!}">{!! $order->request_id !!}</td>
+                                            <td>{!! $order->payment_method !!}</td>
                                         </tr>
                                     @endforeach
                                 </tbody>

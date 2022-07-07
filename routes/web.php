@@ -28,5 +28,6 @@ Route::group(['prefix' => 'orders'], function () {
     Route::get('create', [OrderController::class, 'create'])->name('orders.create');
     Route::post('process', [OrderController::class, 'process' ]);
     Route::get('response/reference/{reference}', [OrderController::class, 'response' ])->name('orders.response');
+    Route::get('fail', [OrderController::class, 'fail'])->name('orders.fail');
 });
 

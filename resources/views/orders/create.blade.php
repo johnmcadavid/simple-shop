@@ -96,7 +96,7 @@
                         </div>
 
                         <div class="mb-3">
-                            <button class="btn btn-success btn-submit">Submit</button>
+                            <button class="btn btn-success btn-submit">Enviar</button>
                         </div>
                     </form>
                 </div>    

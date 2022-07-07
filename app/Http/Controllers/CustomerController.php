@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Customer;
+use Illuminate\Support\Facades\Log;
 
 class CustomerController extends Controller
 {
@@ -15,7 +16,8 @@ class CustomerController extends Controller
         [
             'name' => $request->input("name"),
             'mobile' => $request->input("mobile")
-        ]);        
+        ]);
+        Log::channel('placetopay')->info('placetopay.customer-store', $customer->toArray()); 
         return $customer->id;
     }
 }
