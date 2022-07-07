@@ -85,13 +85,15 @@ class OrderController extends Controller
         }       
     }
 
-    public function response(Request $request)
+    public function response(String $reference)
     {
-        $requestId = $request->input("requestId");
-        $reference = $request->input("reference");
-        $signature = $request->input("signature");
-        Log::channel('placetopay')->info('placetopay.response', ['requestId' => $requestId, 'reference' => $reference, 'signature' => $signature]);
-        return view('orders.response', ['requestId' => $requestId, 'reference' => $reference, 'signature' => $signature]);
+        $order = Order::where('code', $reference)->first();
+        $sessionInformation = new PlaceToPayController();
+        $sessionInformationResponse = $sessionInformation->getSessionInformation($order->request_id);
+        dd($sessionInformationResponse);
+        
+        // Log::channel('placetopay')->info('placetopay.response', ['requestId' => $requestId, 'reference' => $reference, 'signature' => $signature]);
+        return view('orders.response', ['requestId' => $order->request_id, 'reference' => $order->code]);
     }
 
 }

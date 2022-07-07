@@ -41,7 +41,18 @@ class PlaceToPayController extends Controller
         return $placetopay;
     }
 
-    public function getRequest(String $customerName)
+    public function authentication2(String $requestId)
+    {
+        $placetopay = new \Dnetix\Redirection\PlacetoPay([
+            'login' => $this->login,
+            'tranKey' => $this->trankey,
+            'baseUrl' =>  $this->endpoint.'/'.$requestId,
+        ]);
+
+        return $placetopay;
+    }
+
+    public function createRequest(String $customerName)
     {
         $request = [
             'locale' => 'es_CO',
@@ -62,14 +73,9 @@ class PlaceToPayController extends Controller
         return $request;
     }
 
-    public function response($reference)
-    {
-        Log::channel('placetopay')->info('placetopay.response', ['reference' => $reference]);
-    }
-
     public function createPaymentRequest(Array $paymentData)
     {
-        $request = $this->getRequest($paymentData['name']);
+        $request = $this->createRequest($paymentData['name']);
         $placetopay = $this->authentication();
         try {
             $createResponse = $placetopay->request($request);
@@ -79,8 +85,16 @@ class PlaceToPayController extends Controller
         }
     }
 
-    public function getPaymentSession(Array $paymentData)
+    public function getSessionInformation(String $requestId)
     {
+        $request = new Request;
+        $placetopay = $this->authentication2($requestId);
+        try {
+            $createResponse = $placetopay->request($request);
+            dd($createResponse);
+        } catch (Exception $e) {
+            dd($e->getMessage());
+            //return back()->with('error', $e->getMessage());
+        }
     }
-
 }
