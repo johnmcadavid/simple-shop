@@ -174,7 +174,7 @@ class OrderController extends Controller
             $order->message = $sessionInformationResponse['status']['message'];
             $order->payment_method = !empty($sessionInformationResponse['payment'][0]['paymentMethodName'])
                 ? $sessionInformationResponse['payment'][0]['paymentMethodName'] 
-                : $sessionInformationResponse['payment_method'];
+                : '';
             $order->save();
             Log::channel('placetopay')->info('placetopay.response', ['reference' => $reference, 'message' => $order->message , 'status' => $sessionInformationResponse['status']['status']]);
         } catch (Exception $e) {
