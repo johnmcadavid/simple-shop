@@ -23,7 +23,6 @@
                                         <th>Código/Referencia</th>
                                         <th>Estado</th>
                                         <th>Request ID</th>
-                                        <th>Método de pago</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -37,7 +36,6 @@
                                             <td>{!! $order->code !!}</td>
                                             <td>{!! $order->status->name !!}</td>
                                             <td title="{!! $order->message !!}">{!! $order->request_id !!}</td>
-                                            <td>{!! $order->payment_method !!}</td>
                                         </tr>
                                     @endforeach
                                 </tbody>

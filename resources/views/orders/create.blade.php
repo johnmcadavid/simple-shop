@@ -30,7 +30,7 @@
                     <!-- Display Error Message -->
                     @if ($errors->any())
                         <div class="alert alert-danger">
-                            <strong>Whoops!</strong> There were some problems with your input.
+                            <strong>¡Error!</strong> Algunos datos no son válidos.
                             <!--
                             <ul>
                                 @foreach ($errors->all() as $error)
