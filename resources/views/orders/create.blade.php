@@ -62,7 +62,8 @@
                                 type="text" 
                                 name="name" 
                                 id="name"
-                                class="form-control @error('name') is-invalid @enderror" 
+                                class="form-control @error('name') is-invalid @enderror"
+                                value="{{ old('name', !empty($customer) ? $customer->name : '') }}"
                                 placeholder="Digite su nombre">
                             @error('name')
                                 <span class="text-danger">{{ $message }}</span>
@@ -76,6 +77,7 @@
                                 name="email" 
                                 id="email"
                                 class="form-control @error('email') is-invalid @enderror" 
+                                value="{{ old('email', !empty($customer) ? $customer->email : '') }}"
                                 placeholder="Digite su correo electrónico">
                             @error('email')
                                 <span class="text-danger">{{ $message }}</span>
@@ -89,6 +91,7 @@
                                 name="mobile" 
                                 id="mobile"
                                 class="form-control @error('mobile') is-invalid @enderror" 
+                                value="{{ old('mobile', !empty($customer) ? $customer->mobile : '') }}"
                                 placeholder="Digite su número celular">
                             @error('mobile')
                                 <span class="text-danger">{{ $message }}</span>

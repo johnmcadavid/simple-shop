@@ -11,12 +11,6 @@
 
                     <div class="row">
                         <div class="col mb-3">
-                            {{ $order->message }}
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col mb-3">
                             <p class="small text-muted mb-1">Id</p>
                             <p>{{ $order->id }}</p>
                         </div>
@@ -57,6 +51,28 @@
                             <p>{{ $order->created_at }}</p>
                         </div>
                     </div>
+
+                    @if ($order->status->name == "PAYED")
+                        <div class="alert alert-success text-center" role="alert">
+                            {{ $order->message }}
+                        </div>                        
+                    @endif
+                    @if ($order->status->name == "REJECTED")
+                        <div class="alert alert-danger text-center" role="alert">
+                            {{ $order->message }}
+                        </div>
+                        <div class="text-center">
+                            <input type="button" onclick="location.href='/orders/create/customer/{{ $order->customer_id }}';" value="Reintentar pago" />
+                        </div>
+                    @endif
+                    @if (trim($order->status->name) == "CREATED")
+                        <div class="alert alert-warning text-center" role="alert">
+                            {{ $order->message }}
+                        </div>
+                        <div class="text-center">
+                            <input type="button" onclick="location.href='{{ $order->process_url }}';" value="Retomar pago" />
+                        </div>
+                    @endif
 
                 </div>    
             </div>

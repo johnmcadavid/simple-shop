@@ -14,25 +14,61 @@ use Illuminate\Support\Facades\DB;
 class OrderController extends Controller
 {
  
+    /**
+     * Constructor. Se valida usuario autenticado.
+     */
     public function __construct()
     {
         $this->middleware('auth');
     }
 
+    /**
+     * Retorna el listado de órdenes guardadas
+     */
     public function index(Request $request)
     {
         $orders = Order::latest()->get();
         return view('orders.index', ['orders' => $orders]);
     }
 
-    public function create()
+    /**
+     * Retorna los datos de la orden consultada por ID    
+     */
+    public function detail(Int $id)
     {
+        try {
+            $order = Order::where('id', $id)->first();
+        } catch (Exception $e) {
+            Log::channel('placetopay')->info('order.detail', ['id' => $id, 'message' => $e->getMessage()]);
+            return redirect('/orders/fail')->with('status', $e->getMessage());
+        }
+        return view('orders.detail', ['order' => $order]);
+    }
+
+    /**
+     * Carga datos para la vista del formulario de creación
+     */
+    public function create(Int $customerId=-1)
+    {
+        if ($customerId == -1) {
+            $customer = null;
+        }
+        else
+        {
+            $customer = Customer::where('id', $customerId)->first();
+        }
         $status = Status::pluck('name', 'id');
-        $customers = Customer::pluck('name', 'id');
         $singleProductName = config('app.single_product_name');
-        return view('orders.create', [ 'status' => $status, 'customers' => $customers, 'singleProductName' => $singleProductName ] );
+        return view('orders.create', [ 
+            'status' => $status, 
+            'customer' => $customer, 
+            'singleProductName' => $singleProductName 
+        ]);
     }
     
+    /**
+     * Almacena los datos de una nueva orden
+     */
     public function store(Request $request)
     {
         $order = new Order();
@@ -45,30 +81,61 @@ class OrderController extends Controller
         Log::channel('placetopay')->info('placetopay.order-store', $order->toArray());
     }
 
-    public function process(Request $request)
+    /**
+     * Valida los datos enviados desde el formulario de creación
+     */
+    public function validateData(Request $request)
     {
         $validatedData = $request->validate([
-                'name' => 'required|max:80',
-                'email' => 'required|email|max:120',
-                'mobile' => 'max:40',
-            ], [
-                'name.required' => 'El campo Nombre es requerido.',
-                'name.max' => 'El campo Nombre no puede tener más de 80 caracteres.',
-                'email.required' => 'El campo Correo electrónico es requerido.',
-                'email.email' => 'El campo Correo electrónico no es una dirección de correo válida.',
-                'email.max' => 'El campo Correo electrónico no puede ser de más de 120 caracteres.',
-                'mobile.max' => 'El campo Celular no puede ser de más de 40 caracteres.',
-            ]);
-        
+            'name' => 'required|max:80',
+            'email' => 'required|email|max:120',
+            'mobile' => 'max:40',
+        ], [
+            'name.required' => 'El campo Nombre es requerido.',
+            'name.max' => 'El campo Nombre no puede tener más de 80 caracteres.',
+            'email.required' => 'El campo Correo electrónico es requerido.',
+            'email.email' => 'El campo Correo electrónico no es una dirección de correo válida.',
+            'email.max' => 'El campo Correo electrónico no puede ser de más de 120 caracteres.',
+            'mobile.max' => 'El campo Celular no puede ser de más de 40 caracteres.',
+        ]);
+        return $validatedData;
+    }
+
+    /**
+     * Recibe los datos validados y una instacia de la clase PlaceToPayController para
+     * generar el request que permitirá crear la solicitud de pago en PlaceToPay
+     */
+    public function createPaymentOrder($validatedData, $createPayment)
+    {
+        $response = $createPayment->createPaymentRequest($validatedData);
+        return $response;
+    }
+
+    /**
+     * Crea un nuevo cliente o lo actualiza si ya existe a partir de 
+     * los datos enviados en el formulario de creación de una nueva orden
+     */
+    public function createCustomer($validatedData)
+    {
+        $customer = new CustomerController();
+        $customerRequest = new Request($validatedData);
+        $id = $customer->store($customerRequest);
+        return $id;
+    }
+
+    /**
+     * Método llamado desde el formulario de creación de una nueva orden 
+     * para procesar los datos y redireccionar según corresponda
+     */
+    public function process(Request $request)
+    {
+        $validatedData = $this->validateData($request);
         $createPayment = new PlaceToPayController();
-        $createPaymentResponse = $createPayment->createPaymentRequest($validatedData);
+        $createPaymentResponse = $this->createPaymentOrder($validatedData, $createPayment);
 
         if ($createPaymentResponse->isSuccessful()) 
         {
-            $customer = new CustomerController();
-            $customerRequest = new Request($validatedData);
-            $customerId = $customer->store($customerRequest);
-
+            $customerId = $this->createCustomer($validatedData);
             $orderRequest = new Request([
                 'code' => $createPayment->getReference(),
                 'status_id' => 1,
@@ -86,6 +153,9 @@ class OrderController extends Controller
         }       
     }
 
+    /**
+     * Recibe y guarda la respuesta del proceso de pago desde PlaceToPay
+     */
     public function response(String $reference)
     {
         try {
@@ -102,7 +172,9 @@ class OrderController extends Controller
                 $order->status_id = 1;
             }
             $order->message = $sessionInformationResponse['status']['message'];
-            $order->payment_method = $sessionInformationResponse['payment'][0]['paymentMethodName'];
+            $order->payment_method = !empty($sessionInformationResponse['payment'][0]['paymentMethodName'])
+                ? $sessionInformationResponse['payment'][0]['paymentMethodName'] 
+                : $sessionInformationResponse['payment_method'];
             $order->save();
             Log::channel('placetopay')->info('placetopay.response', ['reference' => $reference, 'message' => $order->message , 'status' => $sessionInformationResponse['status']['status']]);
         } catch (Exception $e) {
@@ -112,6 +184,10 @@ class OrderController extends Controller
         return view('orders.response', ['order' => $order]);
     }
 
+    /**
+     * Llama a la vista cuando que muestra mensaje de falla 
+     * obtenido desde un Flash Message
+     */
     public function fail()
     {
         return view('orders.fail');

@@ -22,7 +22,8 @@
                                         <th>Celular</th>
                                         <th>Código/Referencia</th>
                                         <th>Estado</th>
-                                        <th>Request ID</th>
+                                        <th>RequestId</th>
+                                        <th>&nbsp;</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -36,6 +37,7 @@
                                             <td>{!! $order->code !!}</td>
                                             <td>{!! $order->status->name !!}</td>
                                             <td title="{!! $order->message !!}">{!! $order->request_id !!}</td>
+                                            <td><a href="/orders/response/reference/{{$order->code}}">Ver</a></td>
                                         </tr>
                                     @endforeach
                                 </tbody>

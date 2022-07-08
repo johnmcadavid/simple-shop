@@ -25,7 +25,9 @@ Auth::routes();
 
 Route::group(['prefix' => 'orders'], function () {
     Route::get('index', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('detail/id/{id}', [OrderController::class, 'detail'])->name('orders.detail');
     Route::get('create', [OrderController::class, 'create'])->name('orders.create');
+    Route::get('create/customer/{customer}', [OrderController::class, 'create'])->name('orders.create.customer');
     Route::post('process', [OrderController::class, 'process' ]);
     Route::get('response/reference/{reference}', [OrderController::class, 'response' ])->name('orders.response');
     Route::get('fail', [OrderController::class, 'fail'])->name('orders.fail');

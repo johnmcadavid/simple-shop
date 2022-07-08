@@ -17,6 +17,10 @@ class PlaceToPayController extends Controller
     private $endpoint;
     private $reference;
  
+    /**
+     * Constructor de la clase, 
+     * Asigna los datos de autenticacion para PlaceToPay
+     */
     public function __construct()
     {
         $this->login = config('app.place_to_pay.login');
@@ -25,11 +29,17 @@ class PlaceToPayController extends Controller
         $this->reference = 'JMCG_' . time();
     }
 
+    /**
+     * Permite obtener el valor de reference desde un método externa
+     */
     public function getReference()
     {
         return $this->reference;
     }
 
+    /**
+     * Se genera la autenticación en la API de PlaceToPay
+     */
     public function authentication()
     {
         $placetopay = new \Dnetix\Redirection\PlacetoPay([
@@ -40,6 +50,9 @@ class PlaceToPayController extends Controller
         return $placetopay;
     }
 
+    /**
+     * Genera el request para el llamado al método de pago de PlaceToPay
+     */
     public function createRequest(String $customerName)
     {
         $request = [
@@ -61,6 +74,9 @@ class PlaceToPayController extends Controller
         return $request;
     }
 
+    /**
+     * Genera la solicitud de pago al API de PlaceToPay
+     */
     public function createPaymentRequest(Array $paymentData)
     {
         try {
@@ -73,6 +89,9 @@ class PlaceToPayController extends Controller
         }
     }
 
+    /**
+     * Permite obtener la información desde la API de PlaceToPay de un pago procesado
+     */
     public function getSessionInformation(String $requestId)
     {
         try {
